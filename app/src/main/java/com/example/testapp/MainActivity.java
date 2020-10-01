@@ -17,16 +17,35 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
     EditText editEmail, editPassword, editName;
+    private Object HttpsURLConnection;
+    URL url;
+
+    {
+        try {
+            url = new URL ("https://hondenschoolzuidwestfriesland.nl/mobindex.php");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +93,14 @@ public class MainActivity extends AppCompatActivity {
             if (email.length() > 0)
                 params.put("email", email);
 
-            JSONObject json = JsonParser.makeHttpRequest(URL, "POST", params);
+            OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .url(url)
+                        .build();
+
+                try (Response response = client.newCall(request).execute()) {
+                    return response.body().string();
+                }
 
 
             return json;
@@ -99,4 +125,5 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
 }
