@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.ContentValues;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -28,6 +29,9 @@ import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -37,6 +41,11 @@ public class MainActivity extends AppCompatActivity {
     EditText editEmail, editPassword, editName;
     private Object HttpsURLConnection;
     URL url;
+    TextView testtekst;
+    JSONObject json;
+    OkHttpClient client = new OkHttpClient();
+
+
 
     {
         try {
@@ -55,18 +64,52 @@ public class MainActivity extends AppCompatActivity {
         Button loginBtn = findViewById(R.id.btnSignIn);
         editName = (EditText)findViewById(R.id.editTextTextPersonName);
         editPassword = (EditText)findViewById(R.id.editTextTextPassword);
+        testtekst = findViewById(R.id.testtekst);
+
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://reqres.in/api/users/2").newBuilder();
+        String url = urlBuilder.build().toString();
+
+        final Request request = new Request.Builder()
+                .url(url)
+                .build();
 
 
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TextView testtekst = findViewById(R.id.testtekst);
-                testtekst.setText("Nu moet je inloggen");
-                AttemptLogin attemptLogin= new AttemptLogin();
-                attemptLogin.execute(editName.getText().toString(),editPassword.getText().toString(),"");
+
+
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        call.cancel();
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+
+                        final String myResponse = response.body().string();
+
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+
+                                    JSONObject json = new JSONObject(myResponse);
+
+                                    testtekst.setText(json.getJSONObject("data").getString("first_name")+ " "+json.getJSONObject("data").getString("last_name"));
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+
+                    }
+                });
             }
         });
     }
+
 
     private class AttemptLogin extends AsyncTask<String, String, JSONObject> {
 
@@ -90,17 +133,13 @@ public class MainActivity extends AppCompatActivity {
             ContentValues params=new ContentValues();
             params.put("username", name);
             params.put("password", password);
-            if (email.length() > 0)
+            if (email.length() > 0) {
                 params.put("email", email);
+            }
 
-            OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder()
-                        .url(url)
-                        .build();
 
-                try (Response response = client.newCall(request).execute()) {
-                    return response.body().string();
-                }
+
+
 
 
             return json;
@@ -125,5 +164,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+
 
 }
