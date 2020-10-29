@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         editPassword = (EditText)findViewById(R.id.editTextTextPassword);
         testtekst = findViewById(R.id.testtekst);
 
-        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://reqres.in/api/users/2").newBuilder();
+        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://hondenschoolzuidwestfriesland.nl/mobindex.php").newBuilder();
         String url = urlBuilder.build().toString();
 
         final Request request = new Request.Builder()
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
                                     JSONObject json = new JSONObject(myResponse);
 
-                                    testtekst.setText(json.getJSONObject("data").getString("first_name")+ " "+json.getJSONObject("data").getString("last_name"));
+                                    testtekst.setText(json.getString("name"));
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 }
