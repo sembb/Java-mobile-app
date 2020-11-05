@@ -31,9 +31,11 @@ import javax.net.ssl.HttpsURLConnection;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
@@ -64,48 +66,20 @@ public class MainActivity extends AppCompatActivity {
         Button loginBtn = findViewById(R.id.btnSignIn);
         editName = (EditText)findViewById(R.id.editTextTextPersonName);
         editPassword = (EditText)findViewById(R.id.editTextTextPassword);
+        editEmail = (EditText)findViewById(R.id.editTextEmail);
         testtekst = findViewById(R.id.testtekst);
 
-        HttpUrl.Builder urlBuilder = HttpUrl.parse("https://hondenschoolzuidwestfriesland.nl/mobindex.php").newBuilder();
-        String url = urlBuilder.build().toString();
 
-        final Request request = new Request.Builder()
-                .url(url)
-                .build();
+
 
 
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                AttemptLogin task = new AttemptLogin();
+                task.execute(editName.getText().toString(), editPassword.getText().toString(), editEmail.getText().toString());
 
-                client.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        call.cancel();
-                    }
-
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-
-                        final String myResponse = response.body().string();
-
-                        MainActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-
-                                    JSONObject json = new JSONObject(myResponse);
-
-                                    testtekst.setText(json.getString("name"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
-
-                    }
-                });
             }
         });
     }
@@ -125,23 +99,52 @@ public class MainActivity extends AppCompatActivity {
 
         protected JSONObject doInBackground(String... args) {
 
-
             String email = args[2];
             String password = args[1];
             String name = args[0];
 
-            ContentValues params=new ContentValues();
-            params.put("username", name);
-            params.put("password", password);
-            if (email.length() > 0) {
-                params.put("email", email);
-            }
+            HttpUrl.Builder urlBuilder = HttpUrl.parse("https://hondenschoolzuidwestfriesland.nl/mobindex.php").newBuilder();
+            String url = urlBuilder.build().toString();
+            RequestBody formBody = new FormBody.Builder()
+                    .add("username", name)
+                    .add("password", password)
+                    .add("email", email)
+                    .build();
 
+            final Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIkMnkkMTAkZzZrLkwySlFCZlBmN1RTb3g3bmNpTzltcVwvemRVN2JtVC42SXN0SFZtbzZHNlFNSkZRWWRlIiwic3ViIjo0NSwiaWF0IjoxNTUwODk4NDc0LCJleHAiOjE1NTM0OTA0NzR9.tefIaPzefLftE7q0yKI8O87XXATwowEUk_XkAOOQzfw")
+                    .post(formBody)
+                    .build();
 
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    call.cancel();
+                }
 
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
 
+                    final String myResponse = response.body().string();
+                    Log.d("body", myResponse);
 
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
 
+                                JSONObject json = new JSONObject(myResponse);
+
+                                testtekst.setText(myResponse);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+                }
+            });
             return json;
 
         }
