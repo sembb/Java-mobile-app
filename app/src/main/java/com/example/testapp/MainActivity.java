@@ -3,6 +3,7 @@ package com.example.testapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -113,7 +114,6 @@ public class MainActivity extends AppCompatActivity {
 
             final Request request = new Request.Builder()
                     .url(url)
-                    .addHeader("token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIkMnkkMTAkZzZrLkwySlFCZlBmN1RTb3g3bmNpTzltcVwvemRVN2JtVC42SXN0SFZtbzZHNlFNSkZRWWRlIiwic3ViIjo0NSwiaWF0IjoxNTUwODk4NDc0LCJleHAiOjE1NTM0OTA0NzR9.tefIaPzefLftE7q0yKI8O87XXATwowEUk_XkAOOQzfw")
                     .post(formBody)
                     .build();
 
@@ -136,7 +136,17 @@ public class MainActivity extends AppCompatActivity {
 
                                 JSONObject json = new JSONObject(myResponse);
 
-                                testtekst.setText(myResponse);
+                                int successMessage = json.getInt("success");
+
+                                if (successMessage == 1){
+                                    int userid = Integer.parseInt(json.getString("id"));
+                                    Intent inloggen = new Intent(getApplicationContext(), HomeScreen.class);
+                                    inloggen.putExtra("success", successMessage);
+                                    inloggen.putExtra("userid", userid);
+                                    startActivity(inloggen);
+                                }
+
+
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
